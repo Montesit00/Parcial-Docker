@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+
+  mysql:
+    image: mysql:8.0.33
+    container_name: mysql
+    build:
+      context: ./mysql
+      dockerfile: Dockerfile
+    environment:
+      MYSQL_ROOT_PASSWORD: mypassword
+      MYSQL_DATABASE: parcialmonte
+    ports:
+      - 3306:3306
+    volumes:
+      - ./dbdata/mysql:/mysql
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongo-db
+    build:
+      context: ./mongo
+      dockerfile: Dockerfile
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: parcialmonte
+    ports:
+      - 27017:27017
+    volumes:
+      - ./dbdata/mongo:/mongo
+
+  express:
+    container_name: server  
+    build: 
+      context: ./Backend
+      dockerfile: Dockerfile
+    environment:
+      PORT: 3000
+      MYSQL_DB_HOST: mysql
+      DBMONGO_URI: mongodb://root:parcialmonte@mongodb:27017/
+    depends_on:
+      - mysql
+      - mongodb
+    ports:
+      - 3000:3000
+    volumes:
+      - ./Backend:/Backend
